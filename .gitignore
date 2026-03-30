@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Environment & secrets
+.env
+backend/.env
+
+# Databases (SQLite dev db should not be committed)
+*.db
+backend/*.db
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Python cache
+backend/__pycache__/
+backend/routers/__pycache__/
