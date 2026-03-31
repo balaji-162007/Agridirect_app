@@ -121,7 +121,13 @@
           </div>
           <div class="form-group mt-16" style="max-width:580px">
             <label class="form-label">Profile Photo</label>
-            <input type="file" class="form-input" id="profPhoto" accept="image/*"/>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <input type="file" class="form-input" id="profPhoto" accept="image/*" onchange="previewAvatar(this)"/>
+              <button class="btn btn-secondary btn-sm" onclick="openCameraModal('profPhoto')">📸 Use Camera</button>
+            </div>
+            <div id="photoPreviewContainer" style="margin-top:12px;display:none;position:relative;width:80px;height:80px">
+              <img id="photoPreview" src="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid var(--green-200)"/>
+            </div>
           </div>
           <div class="form-group mt-16" style="max-width:580px">
             <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
@@ -210,6 +216,23 @@
     </div>
   </div>
 </div>
+<!-- CAMERA MODAL -->
+<div class="overlay" id="cameraOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">📸 Capture Image</span>
+      <button class="modal-close" onclick="closeCameraModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <video id="cameraVideo" autoplay playsinline style="width:100%; border-radius:var(--radius-md); background:#000;"></video>
+      <canvas id="cameraCanvas" style="display:none"></canvas>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeCameraModal()">Cancel</button>
+      <button class="btn btn-primary" id="captureBtn">Capture</button>
+    </div>
+  </div>
+</div>
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- Mobile Bottom Navigation -->
@@ -235,6 +258,68 @@
 <script src="js/language.js"></script>
 <script src="js/orders.js"></script>
 <script>
+let stream;
+
+function openCameraModal(targetInputId) {
+  const overlay = document.getElementById('cameraOverlay');
+  const video = document.getElementById('cameraVideo');
+  const captureBtn = document.getElementById('captureBtn');
+
+  if (!overlay || !video || !captureBtn) return;
+
+  overlay.classList.add('open');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+    .then(s => {
+      stream = s;
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error("Camera Error:", err);
+      showToast('Could not access camera. Please check permissions.', 'error');
+      closeCameraModal();
+    });
+
+  captureBtn.onclick = () => {
+    const canvas = document.getElementById('cameraCanvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      const file = new File([blob], 'profile_capture.webp', { type: 'image/webp' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      
+      const targetInput = document.getElementById(targetInputId);
+      if (targetInput) {
+        targetInput.files = dataTransfer.files;
+        previewAvatar(targetInput);
+      }
+      closeCameraModal();
+    }, 'image/webp');
+  };
+}
+
+function closeCameraModal() {
+  const overlay = document.getElementById('cameraOverlay');
+  if (overlay) overlay.classList.remove('open');
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+}
+
+function previewAvatar(input) {
+  const preview = document.getElementById('photoPreview');
+  const container = document.getElementById('photoPreviewContainer');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      container.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
 function doSearch(inputId = 'globalSearch') {
   const q = document.getElementById(inputId)?.value.trim();
   if (q) { window.location.href = 'products.html?search=' + encodeURIComponent(q); }
