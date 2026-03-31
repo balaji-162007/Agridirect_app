@@ -73,7 +73,12 @@
 <div class="container section">
   <div class="sidebar-layout">
     <!-- SHARED SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <aside class="sidebar" id="sharedSidebar">
+      <div class="mobile-filter-header">
+        <span class="fw-700">Filter & Sort</span>
+        <button onclick="toggleSidebar()">✕</button>
+      </div>
       <div class="sidebar-section">
         <div class="sidebar-title" data-i18n="category">Category</div>
         <div class="chips" id="catChips">
@@ -116,8 +121,9 @@
     <div class="content-area" style="flex:1; min-width:0">
       
       <!-- Mobile Filter Toggle -->
-      <button class="btn btn-ghost btn-sm mb-16 w-full js-mobile-only" id="mobileFilterToggle" onclick="document.getElementById('sharedSidebar').classList.toggle('open')">
-        🔍 Filter / Search
+      <button class="btn btn-secondary btn-sm mb-16 w-full js-mobile-only" style="border:1.5px solid var(--gray-200);justify-content:center" id="mobileFilterToggle" onclick="toggleSidebar()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 12h6"/></svg>
+        Filter / Sort
       </button>
 
       <!-- PRODUCT DETAIL -->
@@ -253,6 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const s = new URLSearchParams(window.location.search).get('search');
   if (s) { const el = document.getElementById('filterSearch'); if (el) el.value = s; }
 });
+
+function toggleSidebar() {
+  document.getElementById('sharedSidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
 </script>
 </body>
 </html>
