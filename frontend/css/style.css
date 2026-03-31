@@ -526,6 +526,9 @@ p{font-size:.95rem;color:var(--gray-600);line-height:1.7}
 .sidebar-section:last-child{border-bottom:none}
 .sidebar-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-400);margin-bottom:12px}
 
+/* Mobile-only elements hidden on desktop */
+.mobile-filter-header, .sidebar-overlay { display: none; }
+
 /* ============================================================
    RANGE SLIDER
    ============================================================ */
@@ -998,13 +1001,13 @@ p{font-size:.95rem;color:var(--gray-600);line-height:1.7}
   .grid-4{grid-template-columns:repeat(3,1fr)}
   .footer-grid{grid-template-columns:1fr 1fr;gap:28px}
   .sidebar-layout{grid-template-columns:1fr}
-  .sidebar{
+  .sidebar, .dash-sidebar{
     position:fixed; top:0; left:-100%; width:280px; height:100vh;
     background:#fff; z-index:1100; display:block;
     box-shadow:var(--shadow-xl); transition:left 0.3s ease;
     overflow-y:auto; padding-top:60px;
   }
-  .sidebar.open{left:0;display:block;margin-bottom:0}
+  .sidebar.open, .dash-sidebar.open{left:0;display:block;margin-bottom:0}
   .sidebar-overlay{
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
     z-index:1050; backdrop-filter:blur(2px);
@@ -1017,8 +1020,7 @@ p{font-size:.95rem;color:var(--gray-600);line-height:1.7}
   }
   @media(max-width:1024px){ .mobile-filter-header{display:flex} }
   .dash-layout{grid-template-columns:1fr; gap:16px; padding:32px 0}
-  .dash-sidebar{position:static; display:block; border-bottom:none}
-  .dash-sidebar.open{display:block;margin-bottom:20px}
+  /* dash-sidebar drawer styles handled above with .sidebar */
   .dash-content{padding:0}
   .dash-nav{display:flex; overflow-x:auto; padding:8px; gap:8px; scrollbar-width:none}
   .dash-nav::-webkit-scrollbar{display:none}
