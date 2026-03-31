@@ -269,16 +269,37 @@ function openCameraModal(targetInputId) {
 
   overlay.classList.add('open');
 
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-    .then(s => {
-      stream = s;
-      video.srcObject = stream;
-    })
-    .catch(err => {
-      console.error("Camera Error:", err);
-      showToast('Could not access camera. Please check permissions.', 'error');
-      closeCameraModal();
-    });
+  if (!window.isSecureContext) {
+    showToast('Camera requires an HTTPS connection or localhost.', 'error');
+    closeCameraModal();
+    return;
+  }
+
+  const constraints = { video: { facingMode: 'user' } };
+  
+  const startCamera = (cons) => {
+    navigator.mediaDevices.getUserMedia(cons)
+      .then(s => {
+        stream = s;
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Camera error:", err);
+        if (cons.video.facingMode) {
+          // Fallback to any camera
+          console.log("Retrying with simple constraints...");
+          startCamera({ video: true });
+        } else {
+          let msg = 'Could not access camera.';
+          if (err.name === 'NotAllowedError') msg = 'Camera permission denied.';
+          if (err.name === 'NotFoundError') msg = 'No camera found on this device.';
+          showToast(msg, 'error');
+          closeCameraModal();
+        }
+      });
+  };
+
+  startCamera(constraints);
 
   captureBtn.onclick = () => {
     const canvas = document.getElementById('cameraCanvas');
