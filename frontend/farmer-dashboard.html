@@ -425,6 +425,25 @@
   </div>
 </div>
 
+<!-- MOBILE BOTTOM NAVIGATION -->
+<div class="mobile-bottom-nav" id="mobileBottomNav">
+  <a href="#" class="nav-item" onclick="return showPanel('products',this)" title="My Products">
+    📦
+  </a>
+  <a href="#" class="nav-item" onclick="return showPanel('orders',this)" title="Orders">
+    📋
+  </a>
+  <a href="farmers.html" class="nav-item" title="Farmers">
+    🧑‍🌾
+  </a>
+  <a href="#" class="nav-item" onclick="return showPanel('support',this)" title="Support">
+    🛠️
+  </a>
+  <a href="#" class="nav-item" onclick="return showPanel('profile',this)" title="Profile">
+    👤
+  </a>
+</div>
+
 <!-- ADD/EDIT PRODUCT MODAL -->
 <div class="overlay" id="productOverlay">
   <div class="modal modal-lg">
@@ -583,15 +602,6 @@
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
-
-<!-- Mobile Bottom Navigation (Farmer) -->
-<nav class="mobile-bottom-nav farmer-bottom-nav js-mobile-only">
-  <a href="#" class="nav-item" onclick="return showPanel('orders', this)" title="Orders">📦</a>
-  <a href="#" class="nav-item" onclick="return showPanel('products', this)" title="My Products">📋</a>
-  <a href="#" class="nav-item" onclick="return showPanel('support', this)" title="Support">🛠️</a>
-  <a href="farmers.html" class="nav-item" title="Farmers">👨‍🌾</a>
-  <a href="#" class="nav-item" onclick="return showPanel('profile', this)" title="Profile">👤</a>
-</nav>
 
 <script src="js/language.js?v=1.1"></script>
 <script>
@@ -807,9 +817,16 @@ async function initDash() {
     if (section) {
       console.log(`Opening specific section: ${section}`);
       showPanel(section);
+    } else {
+      // Set default active state for mobile bottom nav (overview/dashboard)
+      const mobileNavItems = document.querySelectorAll('.mobile-bottom-nav .nav-item');
+      mobileNavItems.forEach(item => {
+        item.classList.remove('active');
+      });
+      // By default, no bottom nav item is active since overview doesn't have a mobile nav equivalent
     }
   } catch (e) {
-    console.error('initDash critical error:', err);
+    console.error('initDash critical error:', e);
     showToast('Failed to initialize dashboard. Please try logging in again.', 'error');
   }
 }
