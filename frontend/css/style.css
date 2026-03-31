@@ -71,11 +71,12 @@ ul{list-style:none}
 /* Tamil mode adjustments */
 body.lang-ta{font-family:'Noto Sans Tamil','DM Sans',sans-serif}
 body.lang-ta h1,body.lang-ta h2,body.lang-ta h3,body.lang-ta .brand-name{font-family:'Noto Sans Tamil',Georgia,serif}
-body.lang-ta .btn-nav-login{padding:8px 14px;font-size:0.8rem}
+body.lang-ta .btn-nav-login{padding:8px 12px;font-size:0.75rem;white-space:nowrap;min-width:fit-content}
 @media(max-width:480px){
-  body.lang-ta .btn-nav-login{padding:8px 10px;font-size:0.75rem}
-  body.lang-ta .nav-actions{gap:4px}
+  body.lang-ta .btn-nav-login{padding:8px 8px;font-size:0.7rem}
+  body.lang-ta .nav-actions{gap:4px;flex-wrap:nowrap}
   body.lang-ta .lang-switcher{padding:2px 4px}
+  body.lang-ta .brand-name{display:none}
 }
 
 /* ── Typography ── */
