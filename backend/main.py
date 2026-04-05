@@ -31,7 +31,7 @@ from models import User, Product, Order, Review, OrderItem, MarketPrice, Notific
 from utils import (get_current_user, get_current_farmer, get_current_customer,
                    save_image, delete_image, create_token, get_full_url,
                    get_signed_url, upload_to_cloudinary, delete_from_cloudinary)
-from routers import auth, products, orders, reviews, market_price, notifications, delivery
+from routers import auth, products, orders, reviews, market_price, notifications
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -98,6 +98,10 @@ async def lifespan(app: FastAPI):
         if "postgresql" in str(engine.url):
             from sqlalchemy import text
             with engine.connect() as conn:
+                try:
+                    conn.execute(text("DISCARD ALL"))
+                except Exception:
+                    pass
                 # Find all tables with serial/identity columns and reset their sequences
                 tables = ["users", "products", "orders", "order_items", "reviews", "notifications", "districts", "market_prices"]
                 for table in tables:
@@ -633,7 +637,7 @@ def verify_payment(
 
 
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
-app.include_router(delivery.router, prefix="/api") 
+
 
 
 # ── Aliases ───────────────────────────────────────────────────────────────────
