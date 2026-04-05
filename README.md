@@ -1,4 +1,4 @@
-﻿# 🌿 AgriDirect — Farmer-to-Customer Agricultural Marketplace
+# 🌿 AgriDirect — Farmer-to-Customer Agricultural Marketplace
 
 A full-stack web platform connecting farmers directly to customers, with Tamil/English bilingual support, OTP authentication, and real-time order tracking.
 
@@ -51,13 +51,14 @@ INFO:     Uvicorn running on http://127.0.0.1:8000
 Open a **second terminal** (keep the backend running):
 
 ```bash
-cd frontend
-python -m http.server 5500
+cd frontend-react
+npm install
+npm run dev
 ```
 
 ### Step 4 — Open the App
 
-Open your browser: **http://localhost:5500**
+Open your browser: **http://localhost:5173**
 
 ---
 
@@ -66,7 +67,7 @@ Open your browser: **http://localhost:5500**
 This app uses **OTP (One-Time Password)** authentication. In development mode, the OTP is **NOT sent to your phone** — it's printed in the backend terminal.
 
 ### Steps:
-1. Go to http://localhost:5500
+1. Go to http://localhost:5173
 2. Click **"Login"** → switch to **"Register"** tab
 3. Select **Customer** or **Farmer**
 4. Enter your name and a 10-digit mobile number
@@ -88,21 +89,15 @@ This app uses **OTP (One-Time Password)** authentication. In development mode, t
 
 ```
 agridirect/
-├── frontend/
-│   ├── index.html              ← Landing page
-│   ├── login.html              ← Login & Register (OTP)
-│   ├── farmer-dashboard.html   ← Farmer dashboard
-│   ├── customer-dashboard.html ← Customer dashboard
-│   ├── products.html           ← Browse products
-│   ├── cart.html               ← Shopping cart
-│   ├── checkout.html           ← Checkout
-│   ├── css/style.css           ← Stylesheet
-│   └── js/
-│       ├── language.js         ← EN / Tamil translations
-│       ├── auth.js             ← OTP login, JWT session
-│       ├── cart.js             ← Cart state & UI
-│       ├── products.js         ← Product listing & filters
-│       └── orders.js           ← Checkout & order tracking
+├── frontend-react/
+│   ├── src/
+│   │   ├── pages/              ← React pages (Home, Products, Checkout, etc.)
+│   │   ├── components/         ← Reusable UI Components
+│   │   ├── services/           ← API connections & translation logic
+│   │   ├── context/            ← React Context (Cart, Auth, Theme)
+│   │   └── App.jsx             ← Application routing
+│   ├── package.json            ← Dependencies
+│   └── vite.config.js          ← Build configuration
 │
 └── backend/
     ├── main.py                 ← FastAPI app entry point
@@ -158,7 +153,7 @@ OTPs are **NOT sent to your phone** in dev mode. Look in the **backend terminal*
 ```
 
 ### ❌ Product images not showing
-Make sure both servers are running (backend on 8000, frontend on 5500). Open the app via `http://localhost:5500` — NOT via `file://`.
+Make sure both servers are running (backend on 8000, frontend on 5173). Open the app via `http://localhost:5173`.
 
 ### ❌ "Cannot reach server" error
 Make sure the backend is running: `python -m uvicorn main:app --reload --port 8000`
@@ -168,9 +163,6 @@ Make sure the backend is running: `python -m uvicorn main:app --reload --port 80
 ## 🌍 Tamil Language Support
 
 Click **EN** or **த** in the navbar to switch languages instantly.
-
----
-
 
 ---
 
@@ -215,7 +207,7 @@ Click **EN** or **த** in the navbar to switch languages instantly.
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Frontend | React 19 (Vite), HTML5, Vanilla CSS |
 | Backend | Python 3.11, FastAPI |
 | Database | PostgreSQL (prod) / SQLite (dev) via SQLAlchemy |
 | Auth | JWT tokens + Mobile OTP |
