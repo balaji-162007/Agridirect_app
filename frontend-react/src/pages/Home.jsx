@@ -7,7 +7,7 @@ import ProductCard from '../components/ProductCard';
 
 const Home = () => {
   const { t } = useLanguage();
-  const { isLoggedIn, isFarmer, openAuthModal } = useAuth();
+  const { isLoggedIn, isFarmer } = useAuth();
 
   const [featured, setFeatured] = useState([]);
   const [counts, setCounts] = useState({ total: 0 });
@@ -32,7 +32,7 @@ const Home = () => {
           <div className="hero-cta">
             <Link to="/products.html" className="btn btn-primary btn-lg">{t('hero_shop') || 'Shop Now'}</Link>
             {!isLoggedIn && !isFarmer && (
-              <button className="btn btn-secondary btn-lg" onClick={() => openAuthModal('register', 'farmer')}>{t('hero_farmer') || "I'm a Farmer"}</button>
+              <Link to="/login.html?mode=register&role=farmer" className="btn btn-secondary btn-lg">{t('hero_farmer') || "I'm a Farmer"}</Link>
             )}
           </div>
         </div>
