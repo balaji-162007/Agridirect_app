@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API, BASE_URL } from '../services/api';
 import ProductImageSlider from '../components/ProductImageSlider';
 import { useToast } from '../components/Toast';
+import { pushService } from '../services/pushService';
 
 const getFullImageUrl = (path) => {
   if (!path) return null;
@@ -64,6 +65,7 @@ const FarmerDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotifLoading, setIsNotifLoading] = useState(false);
+  const [pushStatus, setPushStatus] = useState('unsupported'); // 'subscribed', 'granted', 'denied', 'unsupported'
 
   // Reviews State
   const [reviews, setReviews] = useState([]);
@@ -135,7 +137,10 @@ const FarmerDashboard = () => {
     }
     if (activeTab === 'products') fetchProducts();
     if (activeTab === 'orders') fetchOrders();
-    if (activeTab === 'notifications') fetchNotifications();
+    if (activeTab === 'notifications') {
+      fetchNotifications();
+      checkPushStatus();
+    }
     if (activeTab === 'reviews') fetchReviews();
     if (activeTab === 'farmers') fetchFarmersFull();
     if (activeTab === 'market') fetchMarketPrices();
@@ -206,6 +211,34 @@ const FarmerDashboard = () => {
   const fetchReviews = async () => {
     setIsReviewsLoading(true);
     try { const data = await API.getFarmerReviews(); setReviews(data?.reviews || []); } catch (e) { console.error(e); } finally { setIsReviewsLoading(false); }
+  };
+
+  const checkPushStatus = async () => {
+    try {
+      const status = await pushService.getSubscriptionStatus();
+      console.log('DEBUG: Push Status =', status);
+      setPushStatus(status);
+    } catch (e) { 
+      console.error('Push status check failed', e);
+      setPushStatus('unsupported');
+    }
+  };
+
+  const handleTogglePush = async () => {
+    try {
+      if (pushStatus === 'subscribed') {
+        await pushService.unsubscribeUser();
+        toast('Push notifications disabled', 'info');
+      } else {
+        await pushService.registerServiceWorker();
+        await pushService.subscribeUser();
+        toast('Push notifications enabled!', 'success');
+      }
+      checkPushStatus();
+    } catch (e) {
+      console.error(e);
+      toast(e.message || 'Push registration failed', 'error');
+    }
   };
 
   // Profile Handlers
@@ -680,9 +713,22 @@ const FarmerDashboard = () => {
 
           {activeTab === 'notifications' && (
             <div style={{ background: '#fff', border: '1px solid var(--gray-200)', borderRadius: '16px', overflow: 'hidden' }}>
-              <div style={{ padding: '24px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ padding: '24px', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <h2 style={{ margin: 0, fontSize: '1.4rem' }}>{t('notifications')}</h2>
-                {notifications.length > 0 && <button className="btn btn-ghost btn-xs" onClick={() => API.markAllNotificationsRead().then(fetchNotifications)}>{t('mark_all_read')}</button>}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  {pushStatus !== 'unsupported' ? (
+                    <button 
+                      className={`btn ${pushStatus === 'subscribed' ? 'btn-ghost' : 'btn-primary'} btn-sm`}
+                      onClick={handleTogglePush}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      {pushStatus === 'subscribed' ? '🔔 Disable Alerts' : '🔕 Enable Device Alerts'}
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>Device Alerts Unsupported</span>
+                  )}
+                  {notifications.length > 0 && <button className="btn btn-ghost btn-xs" onClick={() => API.markAllNotificationsRead().then(fetchNotifications)}>{t('mark_all_read')}</button>}
+                </div>
               </div>
               <div style={{ padding: '24px' }}>
                 {isNotifLoading ? <div>{t('loading')}</div> : notifications.length === 0 ? <div style={{ textAlign: 'center', padding: '60px', color: 'var(--gray-500)' }}>{t('no_notifications')}</div> : (

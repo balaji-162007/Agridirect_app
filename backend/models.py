@@ -86,6 +86,7 @@ class User(Base):
     reviews_given    = relationship("Review", foreign_keys="Review.customer_id", back_populates="customer", lazy="selectin")
     reviews_received = relationship("Review", foreign_keys="Review.farmer_id",   back_populates="farmer",   lazy="selectin")
     notifications    = relationship("Notification", back_populates="user", lazy="selectin")
+    push_subscriptions = relationship("PushSubscription", back_populates="user", lazy="selectin")
 
 
 # ── OTP ───────────────────────────────────────────────────────────────────────
@@ -237,3 +238,17 @@ class Notification(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="notifications")
+
+
+# ── Push Subscription ────────────────────────────────────────────────────────
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    user_id    = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    endpoint   = Column(Text, nullable=False)
+    p256dh     = Column(String(500), nullable=False)
+    auth       = Column(String(200), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="push_subscriptions")

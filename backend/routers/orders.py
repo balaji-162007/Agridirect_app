@@ -15,6 +15,7 @@ from sqlalchemy.orm import selectinload
 from database import get_db
 from models import Order, OrderItem, Product, User, Notification
 from utils import get_current_user, get_current_farmer, get_current_customer
+from routers.push import send_push_notification
 
 router = APIRouter()
 
@@ -195,6 +196,18 @@ def place_order(
     ))
     db.flush()
 
+    # Browser Push Notification
+    try:
+        send_push_notification(
+            user_id=o.farmer_id,
+            title="New Order Received!",
+            message=f"Order #{o.id} from {customer.name} for ₹{o.total}.",
+            link=f"/farmer/orders?id={o.id}"
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Push notification failed: {e}")
+
     return {"message": "Order placed", "order_id": o.id}
 
 
@@ -316,6 +329,18 @@ def cancel_order(
         order_id=o.id,
         link="farmer-dashboard.html?panel=orders"
     ))
+    
+    # Browser Push Notification
+    try:
+        send_push_notification(
+            user_id=o.farmer_id,
+            title="Order Cancelled",
+            message=f"Customer {customer.name} cancelled order #{o.id}.",
+            link="/farmer/orders"
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Push notification failed: {e}")
     
     db.commit()
     return {"message": "Order cancelled successfully and stock restored."}

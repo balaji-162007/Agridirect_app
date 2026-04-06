@@ -210,6 +210,11 @@ const API = {
   markNotificationRead: (id) => apiFetch(`/notifications/${id}/read`, { method: "PUT" }), 
   markAllNotificationsRead: () => apiFetch("/notifications/read-all", { method: "PUT" }), 
 
+  // Push Notifications
+  getVapidPublicKey: () => apiFetch("/push/vapid-public-key"),
+  subscribePush: (subscription) => apiFetch("/push/subscribe", { method: "POST", body: JSON.stringify(subscription) }),
+  unsubscribePush: (subscription) => apiFetch("/push/unsubscribe", { method: "POST", body: JSON.stringify(subscription) }),
+
   // Reviews 
   submitReview: (data) => apiFetch("/reviews", { method: "POST", body: JSON.stringify(data) }), 
   getFeaturedReviews: () => apiFetch("/reviews/featured"),
