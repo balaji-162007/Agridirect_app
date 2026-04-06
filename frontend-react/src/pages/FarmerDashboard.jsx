@@ -55,7 +55,8 @@ const FarmerDashboard = () => {
   const [productForm, setProductForm] = useState({
     name: '', name_ta: '', description: '', category: 'vegetables', product_type: 'organic', price: '', unit: 'kg', quantity: '', harvest_date: ''
   });
-  const [productImages, setProductImages] = useState(null);
+  const [productImages, setProductImages] = useState([]); // Changed from null to []
+  const [cameraMode, setCameraMode] = useState('profile'); // 'profile' or 'product'
   const [isProductSaving, setIsProductSaving] = useState(false);
 
   // Orders State
@@ -263,8 +264,9 @@ const FarmerDashboard = () => {
     }
   };
 
-  const startCamera = async () => {
+  const startCamera = async (mode = 'profile') => {
     try {
+      setCameraMode(mode);
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       setCameraStream(stream);
       setShowCamera(true);
@@ -302,9 +304,17 @@ const FarmerDashboard = () => {
       
       canvas.toBlob((blob) => {
         if (!blob) return;
-        const file = new File([blob], "captured-photo.jpg", { type: "image/jpeg" });
-        setProfilePhoto(file);
-        setPhotoPreview(URL.createObjectURL(blob));
+        const filename = cameraMode === 'product' ? `product-${Date.now()}.jpg` : "captured-photo.jpg";
+        const file = new File([blob], filename, { type: "image/jpeg" });
+        
+        if (cameraMode === 'product') {
+          setProductImages(prev => [...Array.from(prev || []), file]);
+          toast('Product photo captured!', 'success');
+        } else {
+          setProfilePhoto(file);
+          setPhotoPreview(URL.createObjectURL(blob));
+        }
+        
         setTimeout(() => stopCamera(), 300);
       }, 'image/jpeg', 0.9);
     }
@@ -386,7 +396,7 @@ const FarmerDashboard = () => {
   const openAddProduct = () => {
     setEditingProduct(null);
     setProductForm({ name: '', name_ta: '', description: '', category: 'vegetables', product_type: 'organic', price: '', unit: 'kg', quantity: '', harvest_date: '' });
-    setProductImages(null);
+    setProductImages([]);
     setShowProductModal(true);
   };
 
@@ -403,7 +413,7 @@ const FarmerDashboard = () => {
       quantity: p.quantity || '',
       harvest_date: p.harvest_date ? new Date(p.harvest_date).toISOString().split('T')[0] : ''
     });
-    setProductImages(null);
+    setProductImages([]);
     setShowProductModal(true);
   };
 
@@ -418,9 +428,12 @@ const FarmerDashboard = () => {
     try {
       const fd = new FormData();
       Object.keys(productForm).forEach(k => fd.append(k, productForm[k]));
-      if (productImages && productImages.length > 0) {
-        for (let i = 0; i < productImages.length; i++) fd.append('images', productImages[i]);
+      
+      const imgs = Array.from(productImages || []);
+      if (imgs.length > 0) {
+        imgs.forEach(f => fd.append('images', f));
       }
+      
       if (editingProduct) await API.updateProduct(editingProduct.id, fd);
       else await API.createProduct(fd);
       
@@ -1190,8 +1203,42 @@ const FarmerDashboard = () => {
               </div>
 
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Upload Images (Max 5)</label>
-                <input type="file" multiple accept="image/*" onChange={e => setProductImages(e.target.files)} style={{ border: '1px dashed var(--gray-300)', padding: '10px', width: '100%', borderRadius: '8px' }} />
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px' }}>Product Images (Max 5)</label>
+                
+                {/* Image Preview Gallery */}
+                {productImages && productImages.length > 0 && (
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    {Array.from(productImages).map((file, idx) => (
+                      <div key={idx} style={{ position: 'relative', width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--gray-200)' }}>
+                        <img src={URL.createObjectURL(file)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                        <button 
+                          type="button" 
+                          onClick={() => setProductImages(prev => Array.from(prev).filter((_, i) => i !== idx))}
+                          style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(255,0,0,0.7)', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => document.getElementById('productPhotoInput').click()}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '4px'}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => startCamera('product')}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '4px'}}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Take Photo
+                  </button>
+                </div>
+                <input 
+                  type="file" 
+                  id="productPhotoInput" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={e => setProductImages(prev => [...Array.from(prev), ...Array.from(e.target.files)])} 
+                  style={{ display: 'none' }} 
+                />
               </div>
 
               <button type="submit" className="btn btn-primary btn-full" disabled={isProductSaving} style={{ width: '100%', padding: '14px', borderRadius: '8px' }}>
